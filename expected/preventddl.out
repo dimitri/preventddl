@@ -1,0 +1,25 @@
+create extension preventddl;
+-- ensure the GUC definition is loaded
+load 'preventddl';
+show preventddl.enable;
+ preventddl.enable 
+-------------------
+ off
+(1 row)
+
+select name, setting, vartype, context
+  from pg_settings
+ where name = 'preventddl.enable';
+       name        | setting | vartype | context 
+-------------------+---------+---------+---------
+ preventddl.enable | off     | bool    | user
+(1 row)
+
+set preventddl.enable to true;
+-- should fail
+create table foo(f1 int, f2 text);
+ERROR:  prevent ddl is enabled, command not allowed
+CONTEXT:  PL/pgSQL function preventddl.no_ddl() line 7 at RAISE
+set preventddl.enable to false;
+-- should work now
+create table foo(f1 int, f2 text);
